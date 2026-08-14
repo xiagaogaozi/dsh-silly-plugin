@@ -15,6 +15,9 @@ import type { Context } from '@deepseek-ai/cordis'
 
 export const name = 'dsh-tavern-mode'
 
+// 声明宿主服务依赖：保证 apply 时这些服务已就绪（与 dsh-better-sidebar 同款）
+export const inject = ['webServer', 'fs', 'workspaceRegistry', 'shell']
+
 export function apply(ctx: Context): void {
   const fs = ctx.get('fs') as any
   const shell = ctx.get('shell') as any

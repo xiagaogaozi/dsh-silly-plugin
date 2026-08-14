@@ -1,0 +1,16 @@
+{
+  "id": "dsh-external/dsh-tavern-mode",
+  "version": "1.0.0",
+  "main": "./lib/index.js",
+  "description": "DSH 酒馆模式：导入 SillyTavern 角色卡（PNG/JSON），自动拆分世界书/正则/脚本并创建同名工作区。",
+  "engines": {
+    "dsh": ">=0.0.1"
+  },
+  "contributes": {
+    "tools": [],
+    "skills": []
+  },
+  "client": {
+    "main": "./lib/client.js"
+  }
+}
