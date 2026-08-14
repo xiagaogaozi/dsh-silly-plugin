@@ -4,13 +4,13 @@
 
 ## 文件清单
 
-| 文件 | 说明 |
-|---|---|
-| `png2json.js` | 工具：角色卡 PNG → JSON（解析 tEXt chunk 中的 chara/ccv3，支持 base64 包裹） |
-| `split-card.js` | 工具：角色卡 JSON → 四部分拆分（本体 / 世界书 / 正则 / 酒馆助手脚本），**自动合并外部引用世界书** |
-| `tavern-host.js` | 插件 Host 半源码（与运行中 pkg-5 一致） |
-| `tavern-client.js` | 插件 Client 半源码（与运行中 pkg-5 一致） |
-| `e2e-check.js` | 端到端验证脚本（模拟导入链路） |
+| 文件                 | 说明                                                          |
+| ------------------ | ----------------------------------------------------------- |
+| `png2json.js`      | 工具：角色卡 PNG → JSON（解析 tEXt chunk 中的 chara/ccv3，支持 base64 包裹） |
+| `split-card.js`    | 工具：角色卡 JSON → 四部分拆分（本体 / 世界书 / 正则 / 酒馆助手脚本），**自动合并外部引用世界书** |
+| `tavern-host.js`   | 插件 Host 半源码（与运行中 pkg-5 一致）                                  |
+| `tavern-client.js` | 插件 Client 半源码（与运行中 pkg-5 一致）                                |
+| `e2e-check.js`     | 端到端验证脚本（模拟导入链路）                                             |
 
 ## 当前功能（pkg-4，运行中）
 
@@ -38,10 +38,10 @@
 
 ## Host RPC 接口（Client → Host，Package 私有）
 
-| method | 参数 | 返回 |
-|---|---|---|
-| `tavern:get` | — | `{ enabled }` |
-| `tavern:set` | `{ enabled }` | `{ enabled }` |
+| method               | 参数                     | 返回                                                                                                       |
+| -------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------- |
+| `tavern:get`         | —                      | `{ enabled }`                                                                                            |
+| `tavern:set`         | `{ enabled }`          | `{ enabled }`                                                                                            |
 | `tavern:import-card` | `{ fileName, base64 }` | `{ ok, cardName, workspacePath, workspaceId, worldNote[], worldMerged, regexCount, scriptCount }`（未启用拒绝） |
 
 ## 服务（供后续功能包读取）
