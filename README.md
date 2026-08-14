@@ -1,6 +1,6 @@
 # 酒馆模式（Tavern Mode）— DSH 角色扮演扩展
 
-让 DeepSeek Harness 具备 SillyTavern 风格的角色扮演玩法。当前为**动态 Cordis 插件**（`tavern-1`，运行于当前进程），源码与工具落盘在本目录。
+让 DeepSeek Harness 具备 SillyTavern 风格的角色扮演玩法。
 
 ## 文件清单
 
@@ -13,8 +13,6 @@
 | `e2e-check.js` | 端到端验证脚本（模拟导入链路） |
 
 ## 当前功能（pkg-4，运行中）
-
-**所有功能收进 设置 → 酒馆模式 页面。无侧边栏入口、无悬浮窗。**
 
 1. **总开关**：设置 → 酒馆模式 → "启用酒馆模式"。真开关：关闭时 Host 拒绝所有业务 RPC。
 2. **导入角色卡**：页面内点击（弹**系统文件选择器**，在电脑里选文件）或直接**拖拽**文件到虚线区域。支持 PNG / JSON / Lorebook。
@@ -72,4 +70,3 @@ node tavern-plugin/split-card.js character-cards/xxx.json
 - 动态插件不持久：进程重启后需重新 define/run。源码已落盘，后续可改造成持久 agent preset 或正式插件。
 - PNG 解析支持 tEXt chunk（含 base64 包裹 JSON），zTXt/iTXt 暂不支持。
 - 世界书若为外部引用（`extensions.world` 为字符串），需把同名文件（`世界书-<名>.json` / `<名>.json`）放入 `character-cards\` 才能自动合并。
-- 世界书导入（悬浮窗）已按需求移除，后续如需补充可在设置页内实现。
