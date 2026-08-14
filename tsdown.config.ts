@@ -7,6 +7,8 @@ export default {
   format: 'cjs',
   target: 'es2022',
   clean: false,
+  // The package exports ./lib/client.js and Harness loads it as a classic script.
+  outExtensions: () => ({ js: '.js' }),
   dts: false,
   deps: {
     neverBundle: [/@deepseek-ai\/.*/, /^react$/],

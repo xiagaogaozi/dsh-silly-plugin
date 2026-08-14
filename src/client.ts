@@ -108,6 +108,9 @@ interface CharacterRow {
   importedAt: string
 }
 
+/** Required client service used by the settings-slot contribution. */
+export const inject = ['slots']
+
 export function apply(ctx: ClientContext): void {
   ctx.effect(() => {
     const style = document.createElement('style')
