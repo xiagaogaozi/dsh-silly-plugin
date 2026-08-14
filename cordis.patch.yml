@@ -1,0 +1,12 @@
+# dsh-tavern-mode bundle patch
+#
+# 宿主补丁层：插入酒馆模式插件行。安装方式：
+#   dsh plugin --profile web add ./tavern-plugin
+# 或手动：把本包放入 profile 的 node_modules，并在
+#   ~/.dsh/profiles/web/cordis.patch.yml 加入：
+#   - insert:
+#       - id: tavern-mode
+#         name: 'dsh-tavern-mode'
+- insert:
+    - id: tavern-mode
+      name: 'dsh-tavern-mode'

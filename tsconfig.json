@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "jsx": "react-jsx",
+    "ignoreDeprecations": "6.0",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "types": [],
+    "baseUrl": ".",
+    "paths": {
+      "@deepseek-ai/cordis": ["../../deepseek-harness/vendor/cordis/lib/index.ts"],
+      "@deepseek-ai/dsh-typert-protocol": ["../../deepseek-harness/packages/typert/protocol/src/index.ts"],
+      "@deepseek-ai/dsh-fs": ["../../deepseek-harness/packages/fs/fs/src/index.ts"],
+      "@deepseek-ai/dsh-client-runtime/client": ["../../deepseek-harness/packages/client/runtime/src/client/index.ts"],
+      "@deepseek-ai/dsh-client-runtime": ["../../deepseek-harness/packages/client/runtime/src/index.ts"],
+      "@deepseek-ai/dsh-client-ui-slots": ["../../deepseek-harness/packages/client/ui-slots/src/index.ts"],
+      "react": ["../../deepseek-harness/node_modules/@types/react/index.d.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

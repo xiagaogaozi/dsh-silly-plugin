@@ -1,0 +1,15 @@
+# Node
+node_modules/
+*.log
+
+# 构建产物默认忽略；但本仓库保留 lib/ 以便 clone 后直接安装使用。
+# 若需重新构建：pnpm install && pnpm build（需 DSH 部署的 workspace 依赖）
+# lib/
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 编辑器
+.vscode/
+.idea/

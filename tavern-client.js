@@ -1,0 +1,221 @@
+/**
+ * tavern-client.js — 酒馆模式核心 · Client 半（动态 Cordis 插件源码 v7）
+ *
+ * 挂载位置：cordis_define 动态插件 tavern-1/pkg-7（本文件为源码备份，
+ * 与运行中的包内容一致；修改后需重新 define/update 才能生效）。
+ *
+ * 功能（全部收进 设置 → 酒馆模式，无侧边栏入口、无悬浮窗、无总开关）：
+ *  - 导入角色卡：点击弹系统文件选择器 / 拖拽文件 → base64 → Host
+ *  - 导入结果显示：世界书 / 正则 / 脚本数量（harness 官方 SVG 图标）
+ *  - 自动建工作区并跳转
+ *
+ * 图标：
+ *  - 页面标题图标：Iconify mdi:drama-masks（戏剧面具，fill 风格与 harness 一致）
+ *  - 其余图标：harness 官方 ic_ds_* 系列内嵌 path（fill=currentColor）
+ * 注：设置导航行的图标由 ui-settings-general 的 navIcon(id) 硬编码，非内置
+ * id（如 tavern）一律回退默认齿轮，无法从插件侧覆盖；本页标题行提供酒馆
+ * 面具图标。
+ */
+return {
+  apply(ctx) {
+    const slots = ctx.get('slots')
+    if (slots === undefined) return
+    const workspacesSvc = ctx.get('workspaces')
+
+    // ---- harness 官方 SVG 图标（ic_ds_*，内嵌 path 数据，fill=currentColor） ----
+    // IconFolderOpenOutline16
+    const ICON_FOLDER = 'M5.19629 1.57104C5.81144 1.5711 6.38623 1.8786 6.72754 2.39038L7.19922 3.09839C7.28454 3.22635 7.42824 3.30344 7.58203 3.30347H12.1699C13.5039 3.30348 14.5859 4.38548 14.5859 5.71948V6.62671C15.2694 7.02689 15.6605 7.85012 15.4385 8.68726L14.3848 12.658C14.1037 13.7164 13.1449 14.4527 12.0498 14.4529H2.91699C1.51651 14.4529 0.451662 13.2814 0.501954 11.9519V3.98706C0.501954 2.65305 1.58396 1.57104 2.91797 1.57104H5.19629ZM3.7793 7.75562C3.30994 7.75562 2.89883 8.07153 2.77832 8.52515L1.91602 11.7722C1.74167 12.4291 2.23734 13.073 2.91699 13.073H12.0498C12.5191 13.0728 12.9304 12.757 13.0508 12.3035L14.1045 8.33374C14.1819 8.04202 13.9619 7.756 13.6602 7.75562H3.7793ZM2.91797 2.9519C2.34625 2.9519 1.88281 3.41534 1.88281 3.98706V7.2937C2.33068 6.7269 3.02249 6.37476 3.7793 6.37476H13.2051V5.71948C13.2051 5.14777 12.7416 4.68434 12.1699 4.68433H7.58203C6.96675 4.6843 6.39209 4.37595 6.05078 3.86401L5.5791 3.15601C5.49379 3.02821 5.34995 2.95196 5.19629 2.9519H2.91797Z'
+    // IconGlobeOutline14
+    const ICON_GLOBE = 'M7.00018 0.353516C10.6708 0.353535 13.6468 3.32958 13.6469 7.00018C13.6468 10.6708 10.6708 13.6468 7.00018 13.6469C3.32957 13.6468 0.353535 10.6708 0.353516 7.00018C0.353535 3.32957 3.32957 0.353531 7.00018 0.353516ZM5.44643 7.59661C5.49463 8.97506 5.70762 10.191 6.02136 11.0793C6.20141 11.5891 6.40328 11.9585 6.59898 12.1889C6.79501 12.4196 6.93213 12.454 7.00018 12.454C7.06822 12.454 7.20533 12.4197 7.40138 12.1889C7.59708 11.9585 7.79895 11.589 7.979 11.0793C8.29274 10.191 8.50574 8.97506 8.55394 7.59661H5.44643ZM1.57861 7.59661C1.80785 9.70467 3.2386 11.4509 5.1715 12.1388C5.07135 11.9317 4.97972 11.7098 4.89746 11.477C4.53084 10.4391 4.30224 9.0828 4.25357 7.59661H1.57861ZM9.74679 7.59661C9.69813 9.0828 9.46952 10.4391 9.1029 11.477C9.0206 11.7099 8.92818 11.9316 8.82797 12.1388C10.7613 11.4511 12.1925 9.70496 12.4218 7.59661H9.74679ZM5.1706 1.8616C3.23814 2.54963 1.80876 4.29604 1.5795 6.40376H4.25357C4.30224 4.91756 4.53083 3.56129 4.89746 2.5234C4.97968 2.29066 5.07051 2.0686 5.1706 1.8616ZM7.00018 1.54637C6.93213 1.54638 6.79503 1.5807 6.59898 1.81145C6.40332 2.04177 6.20139 2.41058 6.02136 2.92012C5.70754 3.80851 5.49461 5.02499 5.44643 6.40376H8.55394C8.50575 5.025 8.29282 3.80851 7.979 2.92012C7.79898 2.41059 7.59705 2.04177 7.40138 1.81145C7.20531 1.58067 7.06823 1.54637 7.00018 1.54637ZM8.82887 1.8616C8.92902 2.0687 9.02064 2.29053 9.1029 2.5234C9.46953 3.56129 9.69812 4.91756 9.74679 6.40376H12.4209C12.1916 4.29575 10.7618 2.54943 8.82887 1.8616Z'
+    // IconSearchOutline16
+    const ICON_SEARCH = ['M11.894845 6.647401C11.894845 3.725463 9.534486 1.356779 6.623219 1.35657C3.711786 1.35657 1.351635 3.725338 1.351635 6.647401C1.351843 9.569296 3.711911 11.938273 6.623219 11.938273C9.534361 11.938064 11.894637 9.569171 11.894845 6.647401ZM13.245462 6.647401C13.245254 10.317935 10.280401 13.293613 6.623219 13.293821C2.965871 13.293821 0.000204 10.31806 0 6.647401C0 2.976574 2.965746 0 6.623219 0C10.280526 0.000205 13.245462 2.9767 13.245462 6.647401Z', 'M16.000417 15.041079L15.044449 16.000433L11.530434 12.473588L12.486298 11.514234L16.000417 15.041079Z']
+    // IconCodeOutline16
+    const ICON_CODE = 'M12.3368 1.53569L11.931 4.43172H14.8086V5.79673H11.7404L11.1962 9.67859H14.2839V11.0436H11.0056L10.4994 14.6529L9.14873 14.4643L9.62731 11.0436H5.75876L5.25252 14.6529L3.90186 14.4643L4.38043 11.0436H1.69141V9.67859H4.57104L5.11417 5.79673H2.21609V4.43172H5.30581L5.73724 1.34713L7.08995 1.53569L6.68414 4.43172H10.5527L10.9841 1.34713L12.3368 1.53569ZM5.94937 9.67859H9.81791L10.361 5.79673H6.49353L5.94937 9.67859Z'
+    // IconChevronRightOutline14
+    const ICON_CHEVRON_R = 'M5.5 2.15137L5.92383 2.57617L8.65137 5.30273C8.90706 5.55843 9.13382 5.78438 9.29785 5.98828C9.46883 6.20088 9.61756 6.44405 9.66602 6.75C9.69222 6.91565 9.69222 7.08435 9.66602 7.25C9.61756 7.55595 9.46883 7.79912 9.29785 8.01172C9.13382 8.21561 8.90706 8.44157 8.65137 8.69727L5.92383 11.4238L5.5 11.8486L4.65137 11L5.07617 10.5762L7.80273 7.84863C8.07732 7.57405 8.24849 7.40124 8.3623 7.25977C8.46904 7.12709 8.47813 7.07728 8.48047 7.0625C8.48703 7.02105 8.48703 6.97895 8.48047 6.9375C8.47813 6.92272 8.46904 6.87291 8.3623 6.74023C8.24848 6.59876 8.07732 6.42595 7.80273 6.15137L5.07617 3.42383L4.65137 3L5.5 2.15137Z'
+
+    // ---- Iconify：mdi:drama-masks（戏剧面具，fill 风格与 harness 一致，24 viewBox） ----
+    const ICON_MASKS = 'M8.11 19.45a6.95 6.95 0 0 1-4.4-5.1L2.05 6.54c-.24-1.08.45-2.14 1.53-2.37l9.77-2.07l.03-.01c1.07-.21 2.12.48 2.34 1.54l.35 1.67l4.35.93h.03c1.05.24 1.73 1.3 1.51 2.36l-1.66 7.82a6.993 6.993 0 0 1-8.3 5.38a6.9 6.9 0 0 1-3.89-2.34M20 8.18L10.23 6.1l-1.66 7.82v.03c-.57 2.68 1.16 5.32 3.85 5.89s5.35-1.15 5.92-3.84zm-4 8.32a2.96 2.96 0 0 1-3.17 1.39a2.97 2.97 0 0 1-2.33-2.55zM8.47 5.17L4 6.13l1.66 7.81l.01.03c.15.71.45 1.35.86 1.9c-.1-.77-.08-1.57.09-2.37l.43-2c-.45-.08-.84-.33-1.05-.69c.06-.61.56-1.15 1.25-1.31h.25l.78-3.81c.04-.19.1-.36.19-.52m6.56 7.06c.32-.53 1-.81 1.69-.66c.69.14 1.19.67 1.28 1.29c-.33.52-1 .8-1.7.64c-.69-.13-1.19-.66-1.27-1.27m-4.88-1.04c.32-.53.99-.81 1.68-.66c.67.14 1.2.68 1.28 1.29c-.33.52-1 .81-1.69.68c-.69-.17-1.19-.7-1.27-1.31m1.82-6.76l1.96.42l-.16-.8z'
+
+    // 通用 SVG 图标渲染器（与 harness primitives 同构：svg + path[fill=currentColor]）
+    function TIcon(props) {
+      const { d, ds, size = 16, viewBox = '0 0 16 16', style } = props
+      const paths = ds ? ds.map((p, i) => React.createElement('path', { key: i, d: p, fill: 'currentColor' }))
+        : React.createElement('path', { d, fill: 'currentColor' })
+      return React.createElement('svg', { width: size, height: size, viewBox, fill: 'none', xmlns: 'http://www.w3.org/2000/svg', style, 'aria-hidden': true }, paths)
+    }
+
+    styles.insert(`
+      .tv-settings { display: flex; flex-direction: column; gap: 12px; padding: 6px 0; }
+      .tv-head { display: flex; align-items: center; gap: 8px; padding: 2px 2px 0; }
+      .tv-head .tv-head-ic { color: var(--dsw-alias-label-secondary, #aaa); display: inline-flex; }
+      .tv-head .tv-head-label { font-size: 13px; font-weight: 600; color: var(--dsw-alias-label-primary, #eee); }
+
+      .tv-dropzone {
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+        padding: 22px 14px; border: 1px dashed var(--dsw-alias-border-l2, rgba(128,128,128,0.35));
+        border-radius: 10px; cursor: pointer; text-align: center;
+        background: var(--dsw-alias-bg-layer-2, rgba(128,128,128,0.06));
+        color: var(--dsw-alias-label-secondary, #aaa); font-size: 13px;
+        transition: background 0.15s ease;
+      }
+      .tv-dropzone:hover, .tv-dropzone.tv-dragging {
+        background: var(--dsw-alias-interactive-bg-hover-solid, rgba(128,128,128,0.14));
+        border-color: var(--dsw-alias-brand-primary, #4c8dff);
+      }
+      .tv-dropzone .tv-dz-ic { color: var(--dsw-alias-label-secondary, #aaa); }
+      .tv-dropzone .tv-dz-title { font-size: 14px; font-weight: 600; color: var(--dsw-alias-label-primary, #eee); }
+      .tv-dropzone .tv-dz-hint { font-size: 12px; opacity: 0.7; }
+      .tv-dropzone.tv-busy { opacity: 0.6; pointer-events: none; }
+
+      .tv-result { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 8px; background: rgba(46,158,91,0.12); border: 1px solid rgba(46,158,91,0.3); }
+      .tv-result .tv-msg { font-size: 12px; line-height: 1.5; color: var(--dsw-alias-label-primary, #eee); white-space: pre-wrap; word-break: break-all; }
+      .tv-stat-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--dsw-alias-label-primary, #eee); }
+      .tv-stat-row .tv-stat-ic { color: var(--dsw-alias-label-secondary, #aaa); display: inline-flex; }
+      .tv-error { padding: 10px 12px; border-radius: 8px; background: rgba(192,57,43,0.14); border: 1px solid rgba(192,57,43,0.3); font-size: 12px; line-height: 1.5; color: var(--dsw-alias-label-primary, #eee); white-space: pre-wrap; word-break: break-all; }
+      .tv-open-btn {
+        display: inline-flex; align-items: center; gap: 6px;
+        border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 13px; font-weight: 500;
+        background: var(--dsw-alias-brand-primary, #4c8dff); color: #fff; align-self: flex-start;
+      }
+      .tv-open-btn:disabled { opacity: 0.6; cursor: default; }
+    `)
+
+    // ArrayBuffer/Uint8Array → base64（纯 JS，无全局依赖）
+    function toBase64(bytes) {
+      const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+      const out = []
+      for (let i = 0; i < bytes.length; i += 3) {
+        const b0 = bytes[i]
+        const b1 = i + 1 < bytes.length ? bytes[i + 1] : 0
+        const b2 = i + 2 < bytes.length ? bytes[i + 2] : 0
+        out.push(CHARS[b0 >> 2])
+        out.push(CHARS[((b0 & 3) << 4) | (b1 >> 4)])
+        out.push(i + 1 < bytes.length ? CHARS[((b1 & 15) << 2) | (b2 >> 6)] : '=')
+        out.push(i + 2 < bytes.length ? CHARS[b2 & 63] : '=')
+      }
+      return out.join('')
+    }
+
+    function TavernSettings(props) {
+      const [busy, setBusy] = React.useState(false)
+      const [result, setResult] = React.useState(null)
+      const [error, setError] = React.useState(null)
+      const [dragging, setDragging] = React.useState(false)
+      const fileInput = React.useRef(null)
+
+      const openPicker = () => {
+        if (fileInput.current) fileInput.current.click()
+      }
+
+      const handleFile = (file) => {
+        if (!file || busy) return
+        setBusy(true); setResult(null); setError(null)
+        // 角色卡本来就在 character-cards 目录：只传文件名，Host 从磁盘读，避免 10MB+ RPC
+        host.call('tavern:import-card', { fileName: file.name })
+          .then((r) => {
+            if (r && r.ok) {
+              setResult(r)
+              if (workspacesSvc && r.workspaceId) {
+                try { workspacesSvc.startSession(r.workspaceId) } catch (e) { /* 跳转失败不阻塞 */ }
+              }
+            } else {
+              // 目录里没有 → 回退：传 base64 内容（小文件可用）
+              if (r && r.error && /目录|未找到|不存在/i.test(r.error)) {
+                return file.arrayBuffer().then((buf) => {
+                  const base64 = toBase64(new Uint8Array(buf))
+                  return host.call('tavern:import-card', { fileName: file.name, base64 })
+                })
+              }
+              setError((r && r.error) || '导入失败')
+            }
+          })
+          .then((r2) => {
+            if (!r2) return
+            if (r2 && r2.ok) {
+              setResult(r2)
+              if (workspacesSvc && r2.workspaceId) {
+                try { workspacesSvc.startSession(r2.workspaceId) } catch (e) { /* noop */ }
+              }
+            } else {
+              setError((r2 && r2.error) || '导入失败')
+            }
+          })
+          .catch((e) => {
+            setError(String(e && e.message ? e.message : e))
+          })
+          .finally(() => setBusy(false))
+      }
+
+      const onInputChange = (e) => {
+        const file = e.target.files && e.target.files[0]
+        if (file) handleFile(file)
+        e.target.value = ''
+      }
+
+      const onDrop = (e) => {
+        e.preventDefault()
+        setDragging(false)
+        const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]
+        if (file) handleFile(file)
+      }
+
+      const statRow = (icon, label) => React.createElement('div', { className: 'tv-stat-row' },
+        React.createElement('span', { className: 'tv-stat-ic' }, icon),
+        React.createElement('span', null, label),
+      )
+
+      return React.createElement('div', { className: 'tv-settings' },
+        // 标题行：Iconify mdi:drama-masks（戏剧面具）
+        React.createElement('div', { className: 'tv-head' },
+          React.createElement('span', { className: 'tv-head-ic' }, React.createElement(TIcon, { d: ICON_MASKS, size: 16, viewBox: '0 0 24 24' })),
+          React.createElement('span', { className: 'tv-head-label' }, '酒馆模式'),
+        ),
+        // 导入角色卡：点击 / 拖拽（harness folder 图标）
+        React.createElement('div', {
+          className: 'tv-dropzone' + (busy ? ' tv-busy' : '') + (dragging ? ' tv-dragging' : ''),
+          onClick: openPicker,
+          onDragOver: (e) => { e.preventDefault(); setDragging(true) },
+          onDragLeave: () => setDragging(false),
+          onDrop,
+        },
+          React.createElement('div', { className: 'tv-dz-ic' }, React.createElement(TIcon, { d: ICON_FOLDER, size: 20 })),
+          React.createElement('div', { className: 'tv-dz-title' }, busy ? '导入中…' : '导入角色卡'),
+          React.createElement('div', { className: 'tv-dz-hint' }, '点击选择角色卡文件，或直接拖拽到这里（PNG / JSON / Lorebook）'),
+        ),
+        React.createElement('input', {
+          ref: fileInput,
+          type: 'file',
+          accept: '.png,.json,.lorebook',
+          style: { display: 'none' },
+          onChange: onInputChange,
+        }),
+        // 结果：世界书 / 正则 / 脚本数量（harness 图标）
+        result && React.createElement('div', { className: 'tv-result' },
+          React.createElement('div', { className: 'tv-msg' }, '已导入「' + result.cardName + '」'),
+          statRow(React.createElement(TIcon, { d: ICON_GLOBE, size: 14 }), '世界书: ' + (result.worldMerged > 0 ? result.worldMerged + ' 个' : '无')),
+          statRow(React.createElement(TIcon, { ds: ICON_SEARCH, size: 14 }), '正则: ' + result.regexCount + ' 条'),
+          statRow(React.createElement(TIcon, { d: ICON_CODE, size: 14 }), '脚本: ' + result.scriptCount + ' 个'),
+          React.createElement('div', { className: 'tv-msg', style: { opacity: 0.65 } }, '工作区: ' + result.workspacePath),
+          React.createElement('button', {
+            className: 'tv-open-btn',
+            onClick: () => {
+              if (workspacesSvc && result.workspaceId) {
+                try { workspacesSvc.startSession(result.workspaceId) } catch (e) { /* noop */ }
+              }
+            },
+          },
+            '打开工作区',
+            React.createElement(TIcon, { d: ICON_CHEVRON_R, size: 12 }),
+          ),
+        ),
+        error && React.createElement('div', { className: 'tv-error' }, error),
+      )
+    }
+
+    slots.inject('settings.section', () => slots.register(
+      { name: 'settings.section', id: 'tavern', order: 1000, label: '酒馆模式' },
+      (props) => React.createElement(TavernSettings, props),
+    ))
+  },
+}
